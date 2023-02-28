@@ -1,0 +1,21 @@
+cmake_minimum_required(VERSION 3.16)
+project(MyBittorrentDownloader)
+
+find_package(CURL)
+if(CURL_FOUND)
+  include_directories(${CURL_INCLUDE_DIR})
+#   set(requiredlibs ${requiredlibs} ${CURL_LIBRARIES} )
+#   MESSAGE("Find the CURL library and development files.")
+else(CURL_FOUND)
+  message(FATAL_ERROR "Could not find the CURL library and development files.")
+endif(CURL_FOUND)
+
+include_directories(lib)
+include_directories(./lib/bencoding)
+include_directories(src)
+SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR})
+
+add_subdirectory(lib)
+add_subdirectory(src)
+add_subdirectory(unit_tests)
+# add_executable(BTDownloader ./test.cpp)
