@@ -3,39 +3,48 @@
 * [A BitTorrent client in Python 3.5](https://markuseliasson.se/article/bittorrent-in-python/)
 * [重复造轮子的喜悦：从零开始用C++写一个最基础的BitTorrent客户端](https://zhuanlan.zhihu.com/p/386437665)
 
-以前没写过这种稍大一点的C++项目，也不太了解C++的编译，目前也没能弄明白如何将libcurl静态编译进exe中。求教。。
+
 代码风格可能也不规范，欢迎指出。
 
 ***
 ## 使用到的三方库
 [SHA-1 implementation in C++](https://github.com/vog/sha1)
+
 [cpp-bencoding](https://github.com/s3rvac/cpp-bencoding)  稍作了修改
+
 [curl](https://github.com/curl/curl)
 
 ***
+## 系统环境
+Ubuntu 20.04
+
+安装curl: `sudo apt-get install libcurl4-openssl-dev`
+
+***
 ## 安装编译
-其实我也不太懂。。装好curl+openssl的mingw64环境后，我依照以下步骤完成了编译：
+
 ```
-.\lib\bencoding 下执行："g++ -c *.cpp"
-.\lib\bencoding 下执行："ar -r libbencoding.a *.o"
-.\ 下执行："g++ -I .\lib\ -c Tracker.cpp utils.cpp OneFileTorrentPaser.cpp"
-.\ 下执行："g++.exe -fdiagnostics-color=always -g .\main.cpp .\*.o .\lib\bencoding\libbencoding.a -I .\lib\ -o .\MyBittorrentDownloader.exe -lwsock32 -lws2_32 -lcurl -lssl"
+mkdir build
+cd build
+cmake ..
+make
 ```
+项目根目录下将生成一个可执行文件`BTDownloader`
 
 ***
 ## 测试
-MyBittorrentDownloader可通过命令行传入参数启动，也可直接启动后，根据提示填入种子文件路径。
+BTDownloader可通过命令行传入参数启动，也可直接启动后，根据提示填入种子文件路径。
 参数格式如下：
-`MyBittorrentDownloader.exe torrent_file_path (max_connection_num)`
+`./BTDownloader torrent_file_path (max_connection_num)`
 注意：该项目目前只支持下载包含单个文件的种子，包含多个文件的种子将解析失败。文件将被下载至本程序所在目录下的Download文件夹内，若不存在Download文件夹，将只执行下载流程，而不会写入硬盘。
 
 inputs中提供了几个测试用种子文件，使用了如下测试命令，均下载成功：
 ```
-MyBittorrentDownloader.exe .\inputs\Dataset_BUSI.zip.torrent 2
-MyBittorrentDownloader.exe .\inputs\DukeMTMC-reID.zip.torrent
-MyBittorrentDownloader.exe .\inputs\LC25000.zip.torrent 2
-MyBittorrentDownloader.exe .\inputs\Market-1501-v15.09.15.zip.torrent 2
-MyBittorrentDownloader.exe .\inputs\MoralPsychHandbook.torrent
+./BTDownloader ./inputs/Dataset_BUSI.zip.torrent 2
+./BTDownloader ./inputs/DukeMTMC-reID.zip.torrent
+./BTDownloader ./inputs/LC25000.zip.torrent 2
+./BTDownloader ./inputs/Market-1501-v15.09.15.zip.torrent 2
+./BTDownloader ./inputs/MoralPsychHandbook.torrent 2
 ```
 
 ***
@@ -56,11 +65,5 @@ Peer与PieceManager的逻辑为本人自己设计，与上述参考资料并不�
 
 ***
 ## 一些问题
-* 根目录下使用如下命令静态链接了curl,但仍需要许多的动态链接库，不知道怎么把所有东西打包编译起来了。。
-    ```
-    "g++.exe -fdiagnostics-color=always -DCURL_STATICLIB -g .\main.cpp .\*.o .\lib\bencoding\libbencoding.a -I .\lib\ -o .\MyBittorrentDownloader.exe -lcurl -lwsock32 -lws2_32 -lssl"
-    ```
 * 由于本程序下载为单线程，用select管理套接字，尽最大努力收发报文，tcp进行流式传输时一个包未完全到达时就会转入处理该peer数据，可能出现某一个peer很慢，进而影响下载速度的情况。
-* 在WIN10虚拟机测试编译时，使用了msys2，前三步编译始终有问题，最终得到的exe启动时会提示动态链接错误，而在自己的WIN10电脑上无问题。
-* 若用vscode调试会报错“During startup program exited with code 0xc0000139”。
 
